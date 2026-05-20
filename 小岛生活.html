@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#FAF8F5">
+<title>小岛 ☁️</title>
+<link rel="manifest" href="data:application/json,{}">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAF8F5;
+    --surface: rgba(255, 255, 255, 0.85);
+    --surface-solid: #FFFFFF;
+    --surface-2: #F6F3EF;
+    --surface-3: #EEE9E2;
+    --primary: #C4A882;
+    --primary-light: #F0E8D8;
+    --primary-dark: #A8845E;
+    --sleep: #C4B8C8;
+    --sleep-bg: #FAF0FF;
+    --diet: #C4A882;
+    --diet-bg: #FFF8EE;
+    --leisure: #A8C4B8;
+    --leisure-bg: #F0FFF8;
+    --study: #A8B8C4;
+    --study-bg: #EFF4FF;
+    --exercise: #C4A8A8;
+    --exercise-bg: #FFF0EF;
+    --big: #C8B89C;
+    --big-bg: #FFF8F0;
+    --text: #3A3430;
+    --text-2: #7A7068;
+    --text-3: #B4ADA5;
+    --border: #E8E2D8;
+    --border-2: #F0ECE6;
+    --shadow-sm: 0 2px 12px rgba(58,52,48,0.04);
+    --shadow: 0 4px 24px rgba(58,52,48,0.06);
+    --shadow-lg: 0 12px 40px rgba(58,52,48,0.1);
+    --radius: 24px;
+    --radius-sm: 16px;
+    --font-serif: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+    --font-display: 'Ma Shan Zheng', cursive;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { height: 100%; background: #FAF8F5; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-serif);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100%;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  #root { min-height: 100vh; }
+
+  /* 升级后有呼吸感的毛玻璃卡片 */
+  .card {
+    background: var(--surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .card-sm {
+    background: var(--surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50%       { transform: translateY(-6px) rotate(1deg); }
+  }
+
+  .page-enter { animation: fadeUp 0.45s cubic-bezier(0.215, 0.610, 0.355, 1) both; }
+  .modal-enter { animation: slideUp 0.35s cubic-bezier(0.25, 1, 0.5, 1) both; }
+  .float-anim { animation: float 5s ease-in-out infinite; }
+  .fade-in { animation: fadeIn 0.3s ease; }
+
+  .pb-nav { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+  
+  ::-webkit-scrollbar { width: 0px; height: 0px; }
+
+  input, textarea, select {
+    font-family: var(--font-serif);
+    outline: none;
+    -webkit-appearance: none;
+  }
+
+  button { 
+    -webkit-tap-highlight-color: transparent; 
+    cursor: pointer; 
+    border: none; 
+    background: none; 
+    font-family: var(--font-serif);
+    transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  img { -webkit-user-drag: none; user-select: none; object-fit: cover; }
+
+  /* 瀑布流布局 CSS */
+  .masonry-grid {
+    display: flex;
+    margin-left: -10px;
+    width: auto;
+  }
+  .masonry-column {
+    padding-left: 10px;
+    background-clip: padding-box;
+  }
+
+  /* 精致的热力图单元格 */
+  .heatmap-cell {
+    position: relative;
+    transition: all 0.2s ease;
+  }
+  .heatmap-cell:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    background: #3A3430;
+    color: #FAF8F5;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    white-space: nowrap;
+    z-index: 10;
+    box-shadow: var(--shadow);
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useMemo } = React;
+
+// ============================================================
+// 常量与语录系统（统一为温柔、流动、生活感文案）
+// ============================================================
+const QUOTES = [
+  "风吹过小岛，带走了白天的喧嚣，留下纯粹的自己。",
+  "慢慢来，生活不是赶路，而是感受路。",
+  "你记录下的每一件小事，都是给未来自己的一封温柔情书。",
+  "把日子过成自己喜欢的诗，不必完美，真实就好。",
+  "好好吃饭，认真生活，是对世界最温柔的抵抗。",
+  "今日的小岛落雨或天晴，都有它独一无二的可爱样貌。",
+  "呼吸一下，听听心跳的声音，今天你已经很棒了。",
+  "时间在悄悄流淌，而你正踩在属于自己的节奏里。",
+  "去收集细碎的微光，它们会拼凑出温暖的长夜。",
+  "允许自己停顿、发呆、不那么具有生产力。"
+];
+
+const MOODS = [
+  { e: '🥰', label: '开怀' }, { e: '😊', label: '平静' }, { e: '😌', label: '松弛' },
+  { e: '✨', label: '雀跃' }, { e: '🌸', label: '温柔' }, { e: '🌙', label: '倦怠' },
+  { e: '😴', label: '迷糊' }, { e: '🤗', label: '丰盈' }, { e: '😔', label: '低回' },
+  { e: '☁️', label: '放空' },
+];
+
+const MODULES = [
+  { id: 'sleep',    name: '睡眠', emoji: '🌙', color: 'var(--sleep)',    bg: 'var(--sleep-bg)'    },
+  { id: 'diet',     name: '饮食', emoji: '🍱', color: 'var(--diet)',     bg: 'var(--diet-bg)'     },
+  { id: 'leisure',  name: '休闲', emoji: '🌿', color: 'var(--leisure)',  bg: 'var(--leisure-bg)'  },
+  { id: 'study',    name: '学习', emoji: '📖', color: 'var(--study)',    bg: 'var(--study-bg)'    },
+  { id: 'exercise', name: '运动', emoji: '🌸', color: 'var(--exercise)', bg: 'var(--exercise-bg)' },
+];
+
+// ============================================================
+// 工具函数 & 性能优化（多图压缩存储）
+// ============================================================
+const DB = {
+  get:    (k, def = [])   => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch { return def; } },
+  set:    (k, v)          => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  getOne: (k, def = null) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch { return def; } },
+};
+
+const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const todayStr  = (d = new Date()) => d.toISOString().slice(0, 10);
+const fmtDate   = (iso) => { const d = new Date(iso); return `${d.getMonth()+1}月${d.getDate()}日`; };
+const fmtTime   = (iso) => { const d = new Date(iso); return d.toLocaleTimeString('zh',{hour:'2-digit',minute:'2-digit'}); };
+
+// 核心优化：高质压缩图片防LocalStorage爆满
+const compressImage = (file) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const max_size = 600; // 适当限制最大尺寸，在清晰度与体积中取得完美平衡
+        if (width > height) {
+          if (width > max_size) { height *= max_size / width; width = max_size; }
+        } else {
+          if (height > max_size) { width *= max_size / height; height = max_size; }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.65)); // 0.65压缩率
+      };
+    };
+  });
+};
+
+// ============================================================
+// 通用优雅组件（空状态文案重塑、标签、按钮）
+// ============================================================
+const Empty = ({ emoji='🌿', text='今天的小岛还很安静，静静等候你的生活痕迹。' }) => (
+  <div style={{color:'var(--text-3)'}} className="flex flex-col items-center py-12 px-6 gap-3 select-none text-center fade-in">
+    <div className="text-4xl float-anim mb-1">{emoji}</div>
+    <p style={{fontSize:13, lineHeight:1.6}}>{text}</p>
+  </div>
+);
+
+const Tag = ({ children, color='var(--primary)' }) => (
+  <span style={{
+    background: color + '15', color,
+    border: `1px solid ${color}25`,
+    fontSize: 11, padding: '2px 8px',
+    borderRadius: 20, fontWeight: 500,
+  }}>{children}</span>
+);
+
+const Btn = ({ children, onClick, variant='outline', size='md', fullWidth, style: sx = {}, disabled }) => {
+  const base = {
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+    borderRadius: 16, fontWeight: 500, cursor: disabled ? 'not-allowed' : 'pointer',
+    opacity: disabled ? 0.5 : 1, width: fullWidth ? '100%' : undefined,
+    fontSize: size === 'sm' ? 12 : 14,
+    padding: size === 'sm' ? '6px 14px' : '10px 20px',
+  };
+  const variants = {
+    primary: { background: 'var(--primary)', color: '#fff', boxShadow: '0 4px 16px rgba(196,168,130,0.2)' },
+    outline: { background: 'rgba(255,255,255,0.7)', color: 'var(--text-2)', border: '1px solid var(--border)' },
+    ghost:   { background: 'transparent', color: 'var(--text-2)' },
+    danger:  { background: '#FFF0F0', color: '#C4A8A8', border: '1px solid #E8D8D8' },
+    soft:    { background: 'var(--primary-light)', color: 'var(--primary-dark)' },
+  };
+  return (
+    <button onClick={disabled ? undefined : onClick} style={{ ...base, ...variants[variant], ...sx }}
+      onPointerDown={e => e.currentTarget.style.transform = 'scale(0.97)'}
+      onPointerUp={e => e.currentTarget.style.transform = 'scale(1)'}
+    >{children}</button>
+  );
+};
+
+const Field = ({ label, value, onChange, type='text', placeholder='', rows }) => (
+  <div className="flex flex-col gap-1.5 w-full">
+    {label && <label style={{color:'var(--text-2)', fontSize:12, paddingLeft:2}}>{label}</label>}
+    {rows ? (
+      <textarea value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} rows={rows}
+        style={{ background:'var(--surface-2)', border:'1px solid var(--border)', color:'var(--text)', borderRadius:14, padding:'10px 14px', fontSize:14, resize:'none', lineHeight:1.6, width:'100%' }} />
+    ) : (
+      <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder}
+        style={{ background:'var(--surface-2)', border:'1px solid var(--border)', color:'var(--text)', borderRadius:14, padding:'10px 14px', fontSize:14, width:'100%' }} />
+    )}
+  </div>
+);
+
+// ============================================================
+// 一、核心升级：多图组件 & 图片预览交互
+// ============================================================
+const ImageUploader = ({ images, onChange, max = 4 }) => {
+  const [loading, setLoading] = useState(false);
+  const handleFile = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    setLoading(true);
+    const compressedList = [];
+    for (let file of files) {
+      if (images.length + compressedList.length >= max) break;
+      const base64 = await compressImage(file);
+      compressedList.push(base64);
+    }
+    onChange([...images, ...compressedList]);
+    setLoading(false);
+  };
+  const remove = (index) => {
+    onChange(images.filter((_, i) => i !== index));
+  };
+  return (
+    <div className="flex flex-col gap-2 w-full my-1">
+      <label style={{color:'var(--text-2)', fontSize:12, paddingLeft:2}}>生活瞬间影像 ({images.length}/{max})</label>
+      <div className="flex flex-wrap gap-2">
+        {images.map((img, idx) => (
+          <div key={idx} className="relative w-16 h-16 rounded-xl overflow-hidden shadow-sm bg-stone-100 group">
+            <img src={img} className="w-full h-full object-cover" />
+            <button onClick={() => remove(idx)} className="absolute top-0.5 right-0.5 w-4 h-4 bg-black/40 text-white rounded-full flex items-center justify-center text-xs">×</button>
+          </div>
+        ))}
+        {images.length < max && (
+          <label className="w-16 h-16 rounded-xl border border-dashed border-stone-300 flex flex-col items-center justify-center cursor-pointer bg-stone-50 hover:bg-stone-100 transition-colors">
+            <input type="file" accept="image/*" multiple onChange={handleFile} className="hidden" disabled={loading} />
+            <span style={{color:'var(--text-3)'}} className="text-xl font-light">{loading ? '...' : '+'}</span>
+          </label>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// 沉浸式全局图片查看器
+const ImagePreviewContext = React.createContext(() => {});
+const ImagePreviewProvider = ({ children }) => {
+  const [state, setState] = useState({ open: false, images: [], index: 0 });
+  const openPreview = (images, index = 0) => setState({ open: true, images, index });
+  const close = () => setState(p => ({ ...p, open: false }));
+  const prev = (e) => { e.stopPropagation(); setState(p => ({ ...p, index: (p.index - 1 + p.images.length) % p.images.length })); };
+  const next = (e) => { e.stopPropagation(); setState(p => ({ ...p, index: (p.index + 1) % p.images.length })); };
+
+  return (
+    <ImagePreviewContext.Provider value={openPreview}>
+      {children}
+      {state.open && (
+        <div onClick={close} className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[999] flex items-center justify-center fade-in select-none">
+          <button onClick={close} className="absolute top-10 right-6 text-white/60 text-3xl font-light hover:text-white">&times;</button>
+          {state.images.length > 1 && (
+            <button onClick={prev} className="absolute left-4 w-10 h-10 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center text-xl">‹</button>
+          )}
+          <div className="max-w-[90%] max-h-[75vh] flex flex-col items-center">
+            <img src={state.images[state.index]} className="max-w-full max-h-full rounded-lg shadow-2xl transition-all duration-300" />
+            <p className="text-white/40 text-xs mt-4 font-sans">{state.index + 1} / {state.images.length}</p>
+          </div>
+          {state.images.length > 1 && (
+            <button onClick={next} className="absolute right-4 w-10 h-10 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center text-xl">›</button>
+          )}
+        </div>
+      )}
+    </ImagePreviewContext.Provider>
+  );
+};
+
+// 灵活展示小卡片内的多图网格
+const ImageGrid = ({ images }) => {
+  const openPreview = React.useContext(ImagePreviewContext);
+  if (!images || !images.length) return null;
+  const count = images.length;
+  return (
+    <div className={`grid gap-1.5 mt-2 rounded-xl overflow-hidden ${count === 1 ? 'grid-cols-1 max-w-[200px]' : count === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+      {images.map((img, i) => (
+        <div key={i} onClick={(e) => { e.stopPropagation(); openPreview(images, i); }} className={`cursor-zoom-in relative bg-stone-100 ${count === 1 ? 'aspect-auto' : 'aspect-square'}`}>
+          <img src={img} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// ============================================================
+// 通用结构化记录组件
+// ============================================================
+const RecordCard = ({ children, onDelete, accentColor, images }) => (
+  <div className="card p-4">
+    <div className="flex gap-3">
+      <div style={{ background: accentColor }} className="w-0.5 rounded-full flex-shrink-0 min-h-[24px]" />
+      <div className="flex-1 min-w-0">{children}<ImageGrid images={images} /></div>
+      <button onClick={onDelete} style={{ color:'var(--text-3)' }} className="flex-shrink-0 w-6 h-6 rounded-full bg-stone-100 flex items-center justify-center hover:bg-stone-200 text-sm">&times;</button>
+    </div>
+  </div>
+);
+
+const Sheet = ({ open, onClose, title, children }) => {
+  if (!open) return null;
+  return (
+    <div style={{ background:'rgba(40,35,30,0.25)', backdropFilter:'blur(8px)', zIndex:200 }} className="fixed inset-0 flex items-flex-end" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal-enter w-full max-w-[430px] mx-auto bg-white rounded-t-[28px] max-h-[88vh] overflow-y-auto px-5 pt-3 pb-8 shadow-2xl">
+        <div className="w-9 h-1 rounded-full bg-stone-200 mx-auto my-3" />
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base font-semibold text-stone-800">{title}</h3>
+          <button onClick={onClose} style={{ color:'var(--text-3)' }} className="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center text-lg">&times;</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+};
+
+const SegmentPicker = ({ options, value, onChange, color='var(--primary)' }) => (
+  <div className="flex flex-wrap gap-1.5">
+    {options.map(opt => {
+      const active = (typeof opt === 'object' ? opt.value : opt) === value;
+      const label  = typeof opt === 'object' ? opt.label : opt;
+      const val    = typeof opt === 'object' ? opt.value : opt;
+      return (
+        <button key={val} onClick={()=>onChange(val)} className="px-3.5 py-1.5 rounded-xl text-xs font-medium border border-transparent transition-all"
+          style={{ background: active ? color : 'var(--surface-2)', color: active ? '#fff' : 'var(--text-2)', border: active ? 'none' : '1px solid var(--border)' }}>
+          {label}
+        </button>
+      );
+    })}
+  </div>
+);
+
+const Stars = ({ value, onChange, color='var(--primary)', count=5 }) => (
+  <div className="flex gap-1.5">
+    {Array.from({length:count}, (_,i) => (
+      <button key={i} onClick={()=>onChange ? onChange(i+1) : null} style={{color: i < value ? color : 'var(--border)'}} className="text-xl transition-transform hover:scale-110">★</button>
+    ))}
+  </div>
+);
+
+const Dots = ({ value, color='var(--primary)', count=5 }) => (
+  <div className="flex gap-1.5 items-center">
+    {Array.from({length:count}, (_,i) => (
+      <div key={i} style={{ background: i < value ? color : 'var(--border)' }} className={`w-2 h-2 rounded-full transition-transform ${i < value ? 'scale-110' : ''}`} />
+    ))}
+  </div>
+);
+
+const ModuleHeader = ({ emoji, title, accent, bg, onBack, extra }) => (
+  <div style={{ background: bg || 'var(--bg)', borderBottom:`1px solid ${accent}15` }} className="sticky top-0 z-50 backdrop-blur-md px-5 pt-12 pb-3.5 flex items-center gap-3">
+    <button onClick={onBack} className="w-9 h-9 rounded-xl bg-white/80 shadow-sm flex items-center justify-center text-xl text-stone-600">‹</button>
+    <span className="text-xl">{emoji}</span>
+    <h1 className="text-base font-semibold text-stone-800 flex-1">{title}</h1>
+    {extra}
+  </div>
+);
+
+// ============================================================
+// 二、三、四：今日生活摘要、月历、生活热力图模块
+// ============================================================
+const TodaySummaryCard = ({ records }) => {
+  const summary = useMemo(() => {
+    const today = todayStr();
+    let sleepHours = null;
+    let dietCount = 0;
+    let leisureTags = [];
+    let studyMinutes = 0;
+    let exerciseCount = 0;
+
+    (records.sleep || []).forEach(r => {
+      if (r.createdAt.startsWith(today) && r.type === 'wakeup' && r.wakeTime) {
+        sleepHours = r.notes?.includes('小时') ? r.notes : '已醒来';
+      }
+    });
+    (records.diet || []).forEach(r => { if (r.createdAt.startsWith(today)) dietCount++; });
+    (records.leisure || []).forEach(r => {
+      if (r.createdAt.startsWith(today)) {
+        const typeLabel = r.type === 'walk' ? '散步' : r.type === 'game' ? '游戏' : r.type === 'read' ? '阅读' : '放松';
+        if (!leisureTags.includes(typeLabel)) leisureTags.push(typeLabel);
+      }
+    });
+    (records.study || []).forEach(r => { if (r.createdAt.startsWith(today) && r.duration) studyMinutes += parseInt(r.duration); });
+    (records.exercise || []).forEach(r => { if (r.createdAt.startsWith(today)) exerciseCount++; });
+
+    return { sleepHours, dietCount, leisureTags, studyMinutes, exerciseCount };
+  }, [records]);
+
+  const today = todayStr();
+  const mood = useMemo(() => DB.getOne('mood_' + today, ''), [records]);
+
+  const hasData = summary.sleepHours || summary.dietCount > 0 || summary.leisureTags.length > 0 || summary.studyMinutes > 0 || summary.exerciseCount > 0;
+
+  if (!hasData) {
+    return (
+      <div className="card p-4 text-center text-xs text-stone-400 mb-4 bg-white/40">
+        🍃 岛屿微风轻拂。今天还没留下痕迹，等候你开启记录。
+      </div>
+    );
+  }
+
+  return (
+    <div className="card p-4 mb-4 bg-gradient-to-br from-white/90 via-white/80 to-[#FFFBF5] relative overflow-hidden">
+      <div className="absolute -right-3 -top-3 text-6xl opacity-5 pointer-events-none">☁️</div>
+      <div className="text-xs font-medium text-stone-400 mb-2.5 tracking-wider">TODAY SUMMARY · 今日生活摘要</div>
+      <div className="flex flex-col gap-2 text-xs text-stone-600 font-medium">
+        {summary.sleepHours && <p>🌙 晨光熹微间：{summary.sleepHours.length > 8 ? summary.sleepHours.slice(0,10)+'...' : summary.sleepHours}</p>}
+        {summary.dietCount > 0 && <p>🍱 尝过的人间烟火：今天好好记录了 {summary.dietCount} 顿饭</p>}
+        {summary.leisureTags.length > 0 && <p>🌿 慢下来的瞬间：沉浸在 [{summary.leisureTags.join('、')}] 之中</p>}
+        {summary.studyMinutes > 0 && <p>📖 专注的流动：认真探索了 {summary.studyMinutes} 分钟</p>}
+        {summary.exerciseCount > 0 && <p>🌸 舒展的身体：今天让身体微微出汗活了过来</p>}
+        {mood && <p>🥰 岛屿的心情气象：今天整体感到很 “{mood}”</p>}
+      </div>
+      <div style={{ color: 'var(--primary-dark)' }} className="text-[11px] mt-3 pt-2.5 border-t border-stone-100/70 font-light italic">
+        “今天也有在踏实、温柔地生活着呢。”
+      </div>
+    </div>
+  );
+};
+
+// 交互式月历 + 治愈系生活热力图
+const LifeCalendarView = ({ records, onSelectDate, selectedDate }) => {
+  const [currentNav, setCurrentNav] = useState(new Date());
+  
+  // 计算某天总记录丰富度
+  const getDateWeight = (dateStr) => {
+    let count = 0;
+    Object.keys(records).forEach(cat => {
+      count += (records[cat] || []).filter(r => r.createdAt?.startsWith(dateStr)).length;
+    });
+    return count;
+  };
+
+  const monthDays = useMemo(() => {
+    const year = currentNav.getFullYear();
+    const month = currentNav.getMonth();
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const totalDays = new Date(year, month + 1, 0).getDate();
+    
+    const days = [];
+    for (let i = 0; i < firstDayIndex; i++) days.push(null);
+    for (let i = 1; i <= totalDays; i++) {
+      const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+      days.push({ day: i, dateStr: dStr, weight: getDateWeight(dStr) });
+    }
+    return days;
+  }, [currentNav, records]);
+
+  // 全年情绪/记录丰富度热力小方格网（最近24周）
+  const heatmapWeeks = useMemo(() => {
+    const weeks = [];
+    const now = new Date();
+    // 往前推24周
+    const totalDays = 24 * 7;
+    const start = new Date(now.getTime() - totalDays * 24 * 60 * 60 * 1000);
+    
+    // 补齐到周日
+    const startDay = start.getDay();
+    start.setDate(start.getDate() - startDay);
+
+    let tempDate = new Date(start);
+    for (let w = 0; w < 24; w++) {
+      const weekDays = [];
+      for (let d = 0; d < 7; d++) {
+        const dStr = todayStr(tempDate);
+        weekDays.push({ dateStr: dStr, weight: getDateWeight(dStr) });
+        tempDate.setDate(tempDate.getDate() + 1);
+      }
+      weeks.push(weekDays);
+    }
+    return weeks;
+  }, [records]);
+
+  const cellColor = (weight) => {
+    if (weight === 0) return '#F6F3EF';
+    if (weight <= 1) return '#E2EFE9'; // 浅米蓝
+    if (weight <= 3) return '#C2DFD3'; // 柔和绿
+    return '#A8C4B8'; // 经典海岛绿
+  };
+
+  return (
+    <div className="card p-4 mb-4 flex flex-col gap-4 bg-white/70">
+      {/* 1. 柔和生活热力图 */}
+      <div>
+        <div className="text-[11px] font-medium text-stone-400 mb-2 tracking-wider">LIFE HEATMAP · 生活留痕热力图</div>
+        <div className="flex gap-0.5 overflow-x-auto py-1">
+          {heatmapWeeks.map((week, wIdx) => (
+            <div key={wIdx} className="flex flex-col gap-0.5 flex-shrink-0">
+              {week.map((d, dIdx) => (
+                <div key={dIdx} onClick={() => onSelectDate(d.dateStr)} data-tip={`${fmtDate(d.dateStr)}: ${d.weight}条小记`}
+                  className="heatmap-cell w-[9px] h-[9px] rounded-[2px] cursor-pointer"
+                  style={{ background: cellColor(d.weight), border: selectedDate === d.dateStr ? '1px solid #A8845E' : 'none' }} />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 2. 精致月历系统 */}
+      <div className="border-t border-stone-100/80 pt-3">
+        <div className="flex items-center justify-between mb-2.5 px-1">
+          <span className="text-xs font-semibold text-stone-700">{currentNav.getFullYear()}年 {currentNav.getMonth() + 1}月</span>
+          <div className="flex gap-2">
+            <button className="text-sm font-bold text-stone-400 p-1" onClick={() => setCurrentNav(new Date(currentNav.setMonth(currentNav.getMonth()-1)))}>‹</button>
+            <button className="text-xs text-stone-400 font-light p-1" onClick={() => setCurrentNav(new Date())}>回今日</button>
+            <button className="text-sm font-bold text-stone-400 p-1" onClick={() => setCurrentNav(new Date(currentNav.setMonth(currentNav.getMonth()+1)))}>›</button>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-7 gap-y-1.5 text-center text-[11px] text-stone-400 font-sans">
+          {['日','一','二','三','四','五','六'].map(w => <div key={w} className="py-1 font-medium">{w}</div>)}
+          {monthDays.map((item, idx) => {
+            if (!item) return <div key={`empty-${idx}`} />;
+            const isToday = item.dateStr === todayStr();
+            const isSelected = item.dateStr === selectedDate;
+            return (
+              <div key={item.dateStr} onClick={() => onSelectDate(item.dateStr)}
+                className="py-1 flex flex-col items-center justify-center relative cursor-pointer group">
+                <div className="w-6 h-6 rounded-full flex items-center justify-center transition-all font-medium text-stone-700"
+                  style={{
+                    background: isSelected ? 'var(--primary)' : isToday ? 'var(--primary-light)' : 'transparent',
+                    color: isSelected ? '#fff' : isToday ? 'var(--primary-dark)' : 'var(--text)',
+                    boxShadow: isSelected ? '0 2px 6px rgba(196,168,130,0.3)' : 'none'
+                  }}>
+                  {item.day}
+                </div>
+                {item.weight > 0 && !isSelected && (
+                  <div style={{ background: cellColor(item.weight) }} className="w-1 h-1 rounded-full absolute bottom-0.5" />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================
+// 五：精致的时间轴流 Daily Timeline（按选定日期筛选排序）
+// ============================================================
+const DailyTimelineFlow = ({ records, selectedDate, onDeleteRecord }) => {
+  const dayRecords = useMemo(() => {
+    const list = [];
+    Object.keys(records).forEach(cat => {
+      (records[cat] || []).forEach(r => {
+        if (r.createdAt?.startsWith(selectedDate)) {
+          list.push({ ...r, cat });
+        }
+      });
+    });
+    // 精确排序
+    return list.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  }, [records, selectedDate]);
+
+  const catMeta = {
+    sleep: { emoji: '🌙', name: '睡眠', color: 'var(--sleep)' },
+    diet: { emoji: '🍱', name: '饮食', color: 'var(--diet)' },
+    leisure: { emoji: '🌿', name: '休闲', color: 'var(--leisure)' },
+    study: { emoji: '📖', name: '学习', color: 'var(--study)' },
+    exercise: { emoji: '🌸', name: '运动', color: 'var(--exercise)' },
+    somethingbig: { emoji: '🌟', name: 'Big的想法', color: 'var(--big)' }
+  };
+
+  return (
+    <div className="flex flex-col gap-1 px-1">
+      <div className="text-xs font-medium text-stone-400 mb-3 tracking-wider">DAILY TIMELINE · {fmtDate(selectedDate)} 生活轨迹线</div>
+      {dayRecords.length === 0 ? (
+        <Empty emoji="☁️" text="这一天的小岛天朗气清，还没有留下印记。" />
+      ) : (
+        <div className="flex flex-col">
+          {dayRecords.map((r, idx) => {
+            const meta = catMeta[r.cat] || { emoji: '✨', color: 'var(--primary)' };
+            return (
+              <div key={r.id} className="flex gap-3 fade-in group">
+                <div className="flex flex-col items-center flex-shrink-0">
+                  <div style={{ borderColor: meta.color }} className="w-2.5 h-2.5 rounded-full border-2 bg-white z-10 my-1.5" />
+                  {idx < dayRecords.length - 1 && <div className="w-[1px] bg-stone-200 flex-1 my-0.5" />}
+                </div>
+                <div className="flex-1 pb-4 min-w-0">
+                  <div className="card-sm p-3 hover:bg-white transition-all flex flex-col gap-1 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm">{meta.emoji}</span>
+                        <span className="text-[11px] font-medium text-stone-400 font-sans">{fmtTime(r.createdAt)}</span>
+                        <Tag color={meta.color}>{meta.name}</Tag>
+                      </div>
+                      <button onClick={() => onDeleteRecord(r.cat, r.id)} className="text-stone-300 hover:text-stone-500 text-xs px-1">&times;</button>
+                    </div>
+                    {/* 根据各模块特定结构展示轻量卡片 */}
+                    {r.cat === 'sleep' && <p className="text-xs text-stone-700">{r.type === 'sleep' ? `准备入睡 · ${r.bedtime||''}` : `迎来晨光 · ${r.wakeTime||''}`}</p>}
+                    {r.cat === 'diet' && <p className="text-xs text-stone-700 font-medium">{r.food}</p>}
+                    {r.cat === 'leisure' && <p className="text-xs text-stone-700">{r.feeling || '度过了轻松的时间'}</p>}
+                    {r.cat === 'study' && <p className="text-xs text-stone-700 font-medium">{r.subject} <span className="text-[10px] text-stone-400 font-normal">({r.duration}分钟)</span></p>}
+                    {r.cat === 'exercise' && <p className="text-xs text-stone-700">{r.feeling || '运动打卡'}</p>}
+                    {r.cat === 'somethingbig' && <p className="text-xs text-stone-700 font-semibold">{r.title || r.content?.slice(0,15)}</p>}
+                    
+                    {r.notes && <p className="text-[11px] text-stone-400 italic">"{r.notes}"</p>}
+                    <ImageGrid images={r.images} />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============================================================
+// 六：首页增加“最近生活瞬间”横向流 Recent Moments
+// ============================================================
+const RecentMoments = ({ records }) => {
+  const openPreview = React.useContext(ImagePreviewContext);
+  const moments = useMemo(() => {
+    let list = [];
+    Object.keys(records).forEach(cat => {
+      (records[cat] || []).forEach(r => {
+        if (r.images && r.images.length > 0) {
+          r.images.forEach(img => list.push({ img, date: r.createdAt, all: r.images }));
+        }
+      });
+    });
+    return list.sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 6);
+  }, [records]);
+
+  if (moments.length === 0) return null;
+
+  return (
+    <div className="mb-5 px-1 select-none">
+      <div className="text-xs font-medium text-stone-400 mb-2.5 tracking-wider">RECENT MOMENTS · 最近生活瞬间</div>
+      <div className="flex gap-2.5 overflow-x-auto pb-2 scroll-smooth">
+        {moments.map((m, idx) => (
+          <div key={idx} onClick={() => openPreview(m.all, m.all.indexOf(m.img))}
+            className="w-24 h-24 rounded-2xl overflow-hidden shadow-sm flex-shrink-0 bg-stone-100 cursor-zoom-in relative group border border-white">
+            <img src={m.img} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/40 to-transparent p-1">
+              <p className="text-[9px] text-white/90 text-center font-sans">{fmtDate(m.date)}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ============================================================
+// 一.4：精心重塑的灵感瀑布流组件 Masonry
+// ============================================================
+const MiniMasonry = ({ items, renderItem }) => {
+  const leftCol = [];
+  const rightCol = [];
+  items.forEach((item, idx) => {
+    if (idx % 2 === 0) leftCol.push(item);
+    else rightCol.push(item);
+  });
+  return (
+    <div className="masonry-grid">
+      <div className="masonry-column w-1/2 flex flex-col gap-3">{leftCol.map(renderItem)}</div>
+      <div className="masonry-column w-1/2 flex flex-col gap-3">{rightCol.map(renderItem)}</div>
+    </div>
+  );
+};
+
+// ============================================================
+// 各自升级后的核心业务模块视图
+// ============================================================
+const Dashboard = ({ setPage, records, selectedDate, setSelectedDate, onDeleteRecord }) => {
+  const [now, setNow]   = useState(new Date());
+  const [quote]         = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
+  const [mood, setMood] = useState(() => DB.getOne('mood_' + todayStr(), ''));
+  const [showMood, setShowMood]     = useState(false);
+  const [todos, setTodos]           = useState(() => DB.get('todos', []));
+  const [newTodo, setNewTodo]       = useState('');
+  const [addingTodo, setAddingTodo] = useState(false);
+  const todoRef = useRef(null);
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(t);
+  }, []);
+
+  const dateLabel = () => {
+    const days = ['周日','周一','周二','周三','周四','周五','周六'];
+    return `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 · ${days[now.getDay()]}`;
+  };
+  const timeLabel = () => now.toLocaleTimeString('zh', {hour:'2-digit', minute:'2-digit'});
+  const todayCount = (id) => (records[id]||[]).filter(r => r.createdAt?.slice(0,10)===todayStr()).length;
+
+  const pickMood = (e) => { setMood(e); DB.set('mood_' + todayStr(), e); setShowMood(false); };
+  const addTodo = () => {
+    if (!newTodo.trim()) return;
+    const t = { id:genId(), text:newTodo.trim(), done:false, createdAt:new Date().toISOString() };
+    const next = [t, ...todos]; setTodos(next); DB.set('todos', next); setNewTodo(''); setAddingTodo(false);
+  };
+  const toggleTodo = (id) => { const next = todos.map(t => t.id===id ? {...t,done:!t.done} : t); setTodos(next); DB.set('todos', next); };
+  const deleteTodo = (id) => { const next = todos.filter(t => t.id!==id); setTodos(next); DB.set('todos', next); };
+
+  return (
+    <div className="texture-bg min-h-100vh px-5 pt-14 pb-nav page-enter flex flex-col gap-4">
+      {/* 顶部质感时钟与流动的生命寄语 */}
+      <div className="mb-1">
+        <p className="text-stone-400 text-xs mb-1 font-medium font-sans">{dateLabel()}</p>
+        <div style={{ color:'var(--primary)' }} className="font-display text-5xl leading-none mb-2 select-none tracking-tight">{timeLabel()}</div>
+        <p className="text-stone-500 text-xs font-serif leading-relaxed italic">“ {quote} ”</p>
+      </div>
+
+      {/* 岛屿心情气象卡 */}
+      <div className="card p-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="text-3xl float-anim">{mood || '🌸'}</div>
+          <div>
+            <p className="text-stone-400 text-[10px] tracking-wider uppercase font-sans">Island Climate</p>
+            <p className="text-stone-700 text-xs font-medium">今日小岛气象：{mood ? `当前处于【${mood}】状态` : '今天心情如何？'}</p>
+          </div>
+        </div>
+        <Btn onClick={()=>setShowMood(!showMood)} variant='soft' size='sm'>{mood ? '换一换' : '去感应'}</Btn>
+      </div>
+
+      {showMood && (
+        <div className="card p-3 card-enter">
+          <div className="flex flex-wrap gap-2.5 justify-center">
+            {MOODS.map(m => (
+              <button key={m.e} onClick={()=>pickMood(m.e)} className="flex flex-col items-center p-1.5 rounded-xl hover:bg-stone-50 transition-colors" style={{ background: mood===m.e ? 'var(--primary-light)' : 'transparent' }}>
+                <span className="text-xl mb-0.5">{m.e}</span>
+                <span className="text-stone-400 text-[10px]">{m.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 五大生活维度入口 */}
+      <div>
+        <div className="text-stone-400 text-[11px] font-medium tracking-wider mb-2 pl-1">DAILY DIMENSIONS · 五大生活维度</div>
+        <div className="grid grid-cols-5 gap-2">
+          {MODULES.map(m => {
+            const cnt = todayCount(m.id);
+            return (
+              <button key={m.id} onClick={()=>setPage(m.id)} className="flex flex-col items-center py-3 px-1 rounded-2xl border transition-all relative"
+                style={{ background:m.bg, borderColor:`${m.color}25` }}>
+                <span className="text-2xl mb-1 float-anim">{m.emoji}</span>
+                <span style={{color:m.color}} className="text-[10px] font-semibold text-center leading-none">{m.name}</span>
+                {cnt > 0 && <div style={{ background:m.color }} className="absolute -top-1 -right-1 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-sm">{cnt}</div>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 今日生活摘要 */}
+      <TodaySummaryCard records={records} />
+
+      {/* 月历系统与情绪丰富度热力图 */}
+      <LifeCalendarView records={records} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+
+      {/* 动态流式时间轴 */}
+      <DailyTimelineFlow records={records} selectedDate={selectedDate} onDeleteRecord={onDeleteRecord} />
+
+      {/* 精选最近珍贵照片碎片 */}
+      <RecentMoments records={records} />
+
+      {/* 待办碎片岛 */}
+      <div className="card p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-stone-700">未完待续的事物</span>
+            {todos.filter(t=>!t.done).length > 0 && (
+              <span style={{ background:'var(--primary)' }} className="text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">
+                {todos.filter(t=>!t.done).length}
+              </span>
+            )}
+          </div>
+          <button onClick={()=>{setAddingTodo(true);setTimeout(()=>todoRef.current?.focus(),60)}} style={{ background:'var(--primary)' }} className="w-6 h-6 rounded-full text-white flex items-center justify-center shadow-md">+</button>
+        </div>
+
+        {addingTodo && (
+          <div className="flex gap-2 mb-3">
+            <input ref={todoRef} value={newTodo} onChange={e=>setNewTodo(e.target.value)}
+              onKeyDown={e=>{if(e.key==='Enter')addTodo();if(e.key==='Escape')setAddingTodo(false);}}
+              placeholder="轻落下一件想做的事..." className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-700" />
+            <button onClick={addTodo} style={{ background:'var(--primary)' }} className="text-white text-xs px-3 rounded-xl">+</button>
+          </div>
+        )}
+
+        {todos.length === 0 ? <Empty emoji="📝" text="当下没有心事，静享空白时光。" /> : (
+          <div className="flex flex-col gap-1">
+            {todos.map(t => (
+              <div key={t.id} className="flex items-center gap-2.5 py-1.5 border-b border-stone-50/60 last:border-none">
+                <button onClick={()=>toggleTodo(t.id)} className="w-4 h-4 rounded-md flex items-center justify-center border text-[9px] text-white transition-colors"
+                  style={{ background: t.done ? 'var(--leisure)' : 'transparent', borderColor: t.done ? 'transparent' : 'var(--border)' }}>{t.done && '✓'}</button>
+                <span className="flex-1 text-xs transition-all font-serif" style={{ color: t.done ? 'var(--text-3)' : 'var(--text)', textDecoration: t.done ? 'line-through' : 'none' }}>{t.text}</span>
+                <button onClick={()=>deleteTodo(t.id)} className="text-stone-300 hover:text-stone-500 text-sm font-light">&times;</button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Something Big 岛屿宏大一隅 */}
+      <button onClick={()=>setPage('somethingbig')} className="card p-4 flex items-center gap-3.5 text-left">
+        <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#EDE0CC] to-[#C4B8C8] flex items-center justify-center text-xl shadow-inner">🌟</div>
+        <div className="flex-1">
+          <div className="text-xs font-semibold text-stone-700 mb-0.5">Something Big</div>
+          <div className="text-[11px] text-stone-400 font-serif">安放长远的愿望、小理财、人生的璀璨碎念</div>
+        </div>
+        <span className="text-stone-300 text-xl font-light">›</span>
+      </button>
+    </div>
+  );
+};
+
+// ============================================================
+// 各自升级了多图和瀑布流支持的五大模块组件
+// ============================================================
+const SleepModule = ({ onBack, records, addRecord, deleteRecord }) => {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ type:'sleep', bedtime:'', status:'', activity:'', wakeTime:'', quality:3, feeling:'', notes:'', images: [] });
+  const f = (k, v) => setForm(prev => ({...prev, [k]:v}));
+  return (
+    <div className="page-enter min-h-100vh bg-[var(--sleep-bg)]">
+      <ModuleHeader emoji='🌙' title='睡眠气象' accent='var(--sleep)' bg='var(--sleep-bg)' onBack={onBack} extra={<Btn onClick={()=>setOpen(true)} variant='primary' size='sm'>+ 记睡眠</Btn>} />
+      <div className="px-5 py-4 pb-nav">
+        {records.length===0 ? <Empty emoji='🌙' text='记录夜晚与晨曦，体会身体慢下来的呼吸。' /> : (
+          <div className="flex flex-col gap-3">{records.map(r => (
+            <RecordCard key={r.id} accentColor='var(--sleep)' images={r.images} onDelete={()=>deleteRecord('sleep',r.id)}>
+              <div className="flex items-center gap-2 mb-1.5"><Tag color='var(--sleep)'>{r.type==='sleep' ? '🌙 睡前小记' : '☀️ 起床感知'}</Tag><span className="text-[10px] text-stone-400 font-sans">{fmtDate(r.createdAt)}</span></div>
+              {r.type==='sleep' ? (<>
+                {r.bedtime && <p className="text-xs text-stone-700 mb-0.5">准备安睡时刻：{r.bedtime}</p>}
+                {r.status && <p className="text-xs text-stone-500 mb-0.5">心境：{r.status}</p>}
+                {r.activity && <p className="text-xs text-stone-500">睡前温存：{r.activity}</p>}
+              </>) : (<>
+                {r.wakeTime && <p className="text-xs text-stone-700 mb-1">醒来钟点：{r.wakeTime}</p>}
+                <Stars value={r.quality||3} color='var(--sleep)' />
+                {r.feeling && <p className="text-xs text-stone-500 mt-1">{r.feeling}</p>}
+              </>)}
+              {r.notes && <p className="text-xs text-stone-400 italic border-l border-stone-200 pl-2 mt-2">"{r.notes}"</p>}
+            </RecordCard>
+          ))}</div>
+        )}
+      </div>
+      <Sheet open={open} onClose={()=>setOpen(false)} title='捕捉睡眠流向'>
+        <SegmentPicker color='var(--sleep)' options={[{value:'sleep',label:'🌙 准备入睡'},{value:'wakeup',label:'☀️ 晨起睁眼'}]} value={form.type} onChange={v=>f('type',v)} />
+        <div className="flex flex-col gap-3.5 mt-4">
+          {form.type==='sleep' ? (<>
+            <Field label='大致入睡时间' value={form.bedtime} onChange={v=>f('bedtime',v)} type='time' />
+            <Field label='此刻身心状态' value={form.status} onChange={v=>f('status',v)} placeholder='妥帖 / 略带疲惫 / 平静如水...' />
+            <Field label='临睡前在做什么' value={form.activity} onChange={v=>f('activity',v)} placeholder='翻了几页书 / 听了晚安曲...' />
+          </>) : (<>
+            <Field label='实际醒来时间' value={form.wakeTime} onChange={v=>f('wakeTime',v)} type='time' />
+            <div><p className="text-stone-500 text-xs mb-1.5">这一觉的滋养度</p><Stars value={form.quality} onChange={v=>f('quality',v)} color='var(--sleep)' /></div>
+            <Field label='睁眼第一身体感受' value={form.feeling} onChange={v=>f('feeling',v)} placeholder='身心轻盈 / 恋栈被窝的温度...' />
+          </>)}
+          <Field label='梦境或杂感留白' value={form.notes} onChange={v=>f('notes',v)} placeholder='写下梦里的蝴蝶，或昨夜的呢喃...' rows={2} />
+          <ImageUploader images={form.images} onChange={v=>f('images',v)} />
+          <Btn onClick={()=>{addRecord('sleep',{...form}); setOpen(false); setForm({type:'sleep',bedtime:'',status:'',activity:'',wakeTime:'',quality:3,feeling:'',notes:'',images:[]});}} variant='primary' fullWidth>记入小岛生命流</Btn>
+        </div>
+      </Sheet>
+    </div>
+  );
+};
+
+const DietModule = ({ onBack, records, addRecord, deleteRecord }) => {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ mealType:'lunch', food:'', satiety:3, mood:'😊', evaluation:'', notes:'', images:[] });
+  const f = (k,v) => setForm(p=>({...p,[k]:v}));
+  return (
+    <div className="page-enter min-h-100vh bg-[var(--diet-bg)]">
+      <ModuleHeader emoji='🍱' title='人间烟火' accent='var(--diet)' bg='var(--diet-bg)' onBack={onBack} extra={<Btn onClick={()=>setOpen(true)} variant='primary' size='sm'>+ 记一餐</Btn>} />
+      <div className="px-5 py-4 pb-nav">
+        {records.length===0 ? <Empty emoji='🍱' text='好好吃饭，每一道食物都散发着生活幸福的微光。' /> : (
+          <div className="flex flex-col gap-3">{records.map(r => (
+            <RecordCard key={r.id} accentColor='var(--diet)' images={r.images} onDelete={()=>deleteRecord('diet',r.id)}>
+              <div className="flex items-center gap-2 mb-1.5"><Tag color='var(--diet)'>{r.mealType==='breakfast'?'🌅 早餐':r.mealType==='lunch'?'☀️ 午餐':r.mealType==='dinner'?'🌆 晚餐':'🌙 宵夜'}</Tag><span className="text-base">{r.mood}</span><span className="text-[10px] text-stone-400 font-sans">{fmtDate(r.createdAt)}</span></div>
+              {r.food && <p className="text-xs font-semibold text-stone-800 mb-1">{r.food}</p>}
+              <div className="flex items-center gap-2 mb-1"><Dots value={r.satiety||3} color='var(--diet)' /><span className="text-[10px] text-stone-400">饱腹分寸</span></div>
+              {r.evaluation && <p className="text-xs text-stone-500">{r.evaluation}</p>}
+              {r.notes && <p className="text-xs text-stone-400 italic mt-1">"{r.notes}"</p>}
+            </RecordCard>
+          ))}</div>
+        )}
+      </div>
+      <Sheet open={open} onClose={()=>setOpen(false)} title='盛盘生活风味'>
+        <SegmentPicker color='var(--diet)' options={[{value:'breakfast',label:'🌅 晨食'},{value:'lunch',label:'☀️ 午飨'},{value:'dinner',label:'🌆 昏食'},{value:'snack',label:'🌙 随性小食'}]} value={form.mealType} onChange={v=>f('mealType',v)} />
+        <div className="flex flex-col gap-3.5 mt-4">
+          <Field label='品尝了什么美味' value={form.food} onChange={v=>f('food',v)} placeholder='清炒时蔬、热汤面...' />
+          <div><p className="text-stone-500 text-xs mb-1.5">饱腹的愉悦感</p><Dots value={form.satiety} onChange={v=>f('satiety',v)} color='var(--diet)' /></div>
+          <div><p className="text-stone-500 text-xs mb-1.5">进食时刻的心绪</p><div className="flex gap-2">{MOODS.slice(0,6).map(m=><button key={m.e} onClick={()=>f('mood',m.e)} className="text-xl p-1 rounded-lg" style={{background:form.mood===m.e?'var(--primary-light)':'transparent'}}>{m.e}</button>)}</div></div>
+          <Field label='风味感知评价' value={form.evaluation} onChange={v=>f('evaluation',v)} placeholder='落胃妥帖 / 恰到好处的清甜...' />
+          <Field label='碎碎小记' value={form.notes} onChange={v=>f('notes',v)} placeholder='与谁同食，或烹饪时的闲心...' rows={2} />
+          <ImageUploader images={form.images} onChange={v=>f('images',v)} />
+          <Btn onClick={()=>{addRecord('diet',{...form}); setOpen(false); setForm({mealType:'lunch',food:'',satiety:3,mood:'😊',evaluation:'',notes:'',images:[]});}} variant='primary' fullWidth>留存餐桌记忆</Btn>
+        </div>
+      </Sheet>
+    </div>
+  );
+};
+
+const LeisureModule = ({ onBack, records, addRecord, deleteRecord }) => {
+  const [tab, setTab]       = useState('leisure');
+  const [open, setOpen]     = useState(false);
+  const [form, setForm]     = useState({ type:'walk', duration:'', feeling:'', notes:'', images:[] });
+  const [beauty, setBeauty] = useState(() => DB.get('beauty', []));
+  const [beautyOpen, setBO] = useState(false);
+  const [bf, setBf]         = useState({ btype:'makeup', name:'', products:'', evaluation:'', notes:'', images:[] });
+
+  const f = (k,v) => setForm(p=>({...p,[k]:v}));
+  const bfu = (k,v) => setBf(p=>({...p,[k]:v}));
+
+  const saveBeauty = () => {
+    const r = { id:genId(), ...bf, createdAt:new Date().toISOString() };
+    const next = [r, ...beauty]; setBeauty(next); DB.set('beauty', next); setBO(false);
+    setBf({btype:'makeup',name:'',products:'',evaluation:'',notes:'',images:[]});
+  };
+
+  return (
+    <div className="page-enter min-h-100vh bg-[var(--leisure-bg)]">
+      <ModuleHeader emoji='🌿' title='闲暇幽径' accent='var(--leisure)' bg='var(--leisure-bg)' onBack={onBack} extra={<Btn onClick={()=>tab==='leisure'?setOpen(true):setBO(true)} variant='primary' size='sm'>+ 添一笔</Btn>} />
+      <div className="px-5 pt-3"><SegmentPicker color='var(--leisure)' options={[{value:'leisure',label:'松弛时光'},{value:'beauty',label:'💄 私人审美鉴赏'}]} value={tab} onChange={setTab} /></div>
+      <div className="px-5 py-4 pb-nav">
+        {tab==='leisure' ? (
+          records.length===0 ? <Empty emoji='🌿' text='空白也是一种生活。在这里记录你取悦自己的时刻。' /> : (
+            <div className="flex flex-col gap-3">{records.map(r => (
+              <RecordCard key={r.id} accentColor='var(--leisure)' images={r.images} onDelete={()=>deleteRecord('leisure',r.id)}>
+                <div className="flex items-center gap-2 mb-1.5"><Tag color='var(--leisure)'>{r.type === 'walk' ? '散步' : r.type === 'read' ? '阅读' : '放松'}</Tag>{r.duration && <span className="text-[10px] text-stone-400 font-sans">{r.duration}分钟</span>}<span className="text-[10px] text-stone-400 font-sans">{fmtDate(r.createdAt)}</span></div>
+                {r.feeling && <p className="text-xs text-stone-700">{r.feeling}</p>}
+                {r.notes && <p className="text-xs text-stone-400 italic mt-1">"{r.notes}"</p>}
+              </RecordCard>
+            ))}</div>
+          )
+        ) : (
+          beauty.length===0 ? <Empty emoji='💄' text='在这里寄存你的私人妆容审美与风格收藏。' /> : (
+            /* 升级一：完美契合小红书/审美鉴赏感的瀑布流展示 */
+            <MiniMasonry items={beauty} renderItem={(r) => (
+              <div key={r.id} className="card p-3 flex flex-col gap-2 bg-white/90">
+                <div className="flex justify-between items-center"><Tag color={r.btype==='makeup'?'#C4B8C8':'var(--primary)'}>{r.btype==='makeup'?'💄 妆容':'✨ 风格'}</Tag><button onClick={()=> { const next = beauty.filter(x=>x.id!==r.id); setBeauty(next); DB.set('beauty', next); }} className="text-stone-300 text-sm">&times;</button></div>
+                <ImageGrid images={r.images} />
+                {r.name && <p className="text-xs font-semibold text-stone-800 leading-tight">{r.name}</p>}
+                {r.products && <p className="text-[10px] text-stone-400 leading-normal">好物：{r.products}</p>}
+                {r.evaluation && <p className="text-xs text-stone-600 leading-relaxed font-light">{r.evaluation}</p>}
+                <p className="text-[9px] text-stone-300 font-sans mt-1">{fmtDate(r.createdAt)}</p>
+              </div>
+            )} />
+          )
+        )}
+      </div>
+      <Sheet open={open} onClose={()=>setOpen(false)} title='寄存闲暇切片'>
+        <div className="flex flex-col gap-3.5">
+          <SegmentPicker color='var(--leisure)' options={[{value:'walk',label:'🚶 散步'},{value:'game',label:'🎮 游戏'},{value:'read',label:'📚 阅读'},{value:'daydream',label:'☁️ 放空'}]} value={form.type} onChange={v=>f('type',v)} />
+          <Field label='驻留时长 (分钟)' value={form.duration} onChange={v=>f('duration',v)} type='number' />
+          <Field label='当下的放松感悟' value={form.feeling} onChange={v=>f('feeling',v)} placeholder='紧绷的神经慢慢松开了...' />
+          <Field label='小注' value={form.notes} onChange={v=>f('notes',v)} placeholder='风的触感，或书里的一句话...' rows={2} />
+          <ImageUploader images={form.images} onChange={v=>f('images',v)} />
+          <Btn onClick={()=>{addRecord('leisure',{...form}); setOpen(false); setForm({type:'walk',duration:'',feeling:'',notes:'',images:[]});}} variant='primary' fullWidth>存入光阴盒</Btn>
+        </div>
+      </Sheet>
+      <Sheet open={beautyOpen} onClose={()=>setBO(false)} title='收纳独家审美灵感'>
+        <div className="flex flex-col gap-3.5">
+          <SegmentPicker color='#C4B8C8' options={[{value:'makeup',label:'💄 妆造日记'},{value:'style',label:'✨ 审美收藏'}]} value={bf.btype} onChange={v=>bfu('btype',v)} />
+          <Field label={bf.btype==='makeup'?'妆容灵感阐述':'风格穿搭关键词'} value={bf.name} onChange={v=>bfu('name',v)} placeholder={bf.btype==='makeup'?'柔和秋季感妆容...':'法式慵懒 / 清冷系植物感...'} />
+          {bf.btype==='makeup' && <Field label='爱用物器皿组合' value={bf.products} onChange={v=>bfu('products',v)} placeholder='低饱和腮红、哑光口红...' />}
+          <Field label='惊艳的视觉评价 / 灵感源头' value={bf.evaluation} onChange={v=>bfu('evaluation',v)} placeholder='在街角橱窗看到的优雅色调搭配...' />
+          <ImageUploader images={bf.images} onChange={v=>bfu('images',v)} />
+          <Btn onClick={saveBeauty} variant='primary' fullWidth>筑就我的私密灵感库</Btn>
+        </div>
+      </Sheet>
+    </div>
+  );
+};
+
+const StudyModule = ({ onBack, records, addRecord, deleteRecord }) => {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ stype:'study', subject:'', duration:'', feeling:'', notes:'', images:[] });
+  const f = (k,v) => setForm(p=>({...p,[k]:v}));
+  return (
+    <div className="page-enter min-h-100vh bg-[var(--study-bg)]">
+      <ModuleHeader emoji='📖' title='知识原野' accent='var(--study)' bg='var(--study-bg)' onBack={onBack} extra={<Btn onClick={()=>setOpen(true)} variant='primary' size='sm'>+ 积心智</Btn>} />
+      <div className="px-5 py-4 pb-nav">
+        {records.length===0 ? <Empty emoji='📖' text='摒弃功利的效率，只是纯粹、安静地触碰未知。' /> : (
+          <div className="flex flex-col gap-3">{records.map(r => (
+            <RecordCard key={r.id} accentColor='var(--study)' images={r.images} onDelete={()=>deleteRecord('study',r.id)}>
+              <div className="flex items-center gap-2 mb-1.5"><Tag color='var(--study)'>{r.stype==='reading'?'📚 静心阅览':r.stype=='course'?'🎓 听课授业':'📖 思维探索'}</Tag>{r.duration && <span className="text-[10px] text-stone-400 font-sans">{r.duration}分钟</span>}<span className="text-[10px] text-stone-400 font-sans">{fmtDate(r.createdAt)}</span></div>
+              {r.subject && <p className="text-xs font-semibold text-stone-800 mb-1">{r.subject}</p>}
+              {r.feeling && <p className="text-xs text-stone-500 mb-2">{r.feeling}</p>}
+              {r.notes && <div className="bg-stone-50/80 border-l border-stone-300 p-2.5 rounded-r-xl text-xs text-stone-600 leading-relaxed font-serif">"{r.notes}"</div>}
+            </RecordCard>
+          ))}</div>
+        )}
+      </div>
+      <Sheet open={open} onClose={()=>setOpen(false)} title='记录思维前行迹象'>
+        <div className="flex flex-col gap-3.5">
+          <SegmentPicker color='var(--study)' options={[{value:'study',label:'📖 治学心流'},{value:'reading',label:'📚 闲书漫笔'},{value:'course',label:'🎓 技能琢磨'}]} value={form.stype} onChange={v=>f('stype',v)} />
+          <Field label='涉猎的对象 / 篇目' value={form.subject} onChange={v=>f('subject',v)} placeholder='美学原理 / 随笔手札...' />
+          <Field label='沉浸深度 (分钟)' value={form.duration} onChange={v=>f('duration',v)} type='number' />
+          <Field label='今日心流反馈' value={form.feeling} onChange={v=>f('feeling',v)} placeholder='进入状态略慢，但后半程思维很清明...' />
+          <Field label='吉光片羽的摘抄 / 笔记' value={form.notes} onChange={v=>f('notes',v)} placeholder='记下最击中内心的一段睿智文字...' rows={3} />
+          <ImageUploader images={form.images} onChange={v=>f('images',v)} />
+          <Btn onClick={()=>{addRecord('study',{...form}); setOpen(false); setForm({stype:'study',subject:'',duration:'',feeling:'',notes:'',images:[]});}} variant='primary' fullWidth>拓宽认知疆域</Btn>
+        </div>
+      </Sheet>
+    </div>
+  );
+};
+
+const ExerciseModule = ({ onBack, records, addRecord, deleteRecord }) => {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ etype:'walk', duration:'', feeling:'', bodyStatus:'', notes:'', images:[] });
+  const f = (k,v) => setForm(p=>({...p,[k]:v}));
+  return (
+    <div className="page-enter min-h-100vh bg-[var(--exercise-bg)]">
+      <ModuleHeader emoji='🌸' title='身体复苏' accent='var(--exercise)' bg='var(--exercise-bg)' onBack={onBack} extra={<Btn onClick={()=>setOpen(true)} variant='primary' size='sm'>+ 动一下</Btn>} />
+      <div className="px-5 py-4 pb-nav">
+        {records.length===0 ? <Empty emoji='🌸' text='感知骨骼与肌肉的舒展，让生命力重新饱满。' /> : (
+          <div className="flex flex-col gap-3">{records.map(r => (
+            <RecordCard key={r.id} accentColor='var(--exercise)' images={r.images} onDelete={()=>deleteRecord('exercise',r.id)}>
+              <div className="flex items-center gap-2 mb-1.5"><Tag color='var(--exercise)'>{r.etype==='yoga'?'🧘 舒缓瑜伽':r.etype==='run'?'🏃 快步逐风':'🌸 身体觉醒'}</Tag>{r.duration && <span className="text-[10px] text-stone-400 font-sans">{r.duration}分钟</span>}<span className="text-[10px] text-stone-400 font-sans">{fmtDate(r.createdAt)}</span></div>
+              {r.bodyStatus && <p className="text-xs text-stone-600 mb-0.5">身体感应：{r.bodyStatus}</p>}
+              {r.feeling && <p className="text-xs text-stone-700 italic">“{r.feeling}”</p>}
+            </RecordCard>
+          ))}</div>
+        )}
+      </div>
+      <Sheet open={open} onClose={()=>setOpen(false)} title='记录汗水与呼吸'>
+        <div className="flex flex-col gap-3.5">
+          <SegmentPicker color='var(--exercise)' options={[{value:'walk',label:'🚶 漫步'},{value:'run',label:'🏃 畅跑'},{value:'yoga',label:'🧘 脉络舒展'},{value:'stretch',label:'🌸 静态松解'}]} value={form.etype} onChange={v=>f('etype',v)} />
+          <Field label='体能交织时长 (分钟)' value={form.duration} onChange={v=>f('duration',v)} type='number' />
+          <Field label='肌理反应评价' value={form.bodyStatus} onChange={v=>f('bodyStatus',v)} placeholder='微微出汗，关节变得轻巧灵便...' />
+          <Field label='倾听身体内心的一句低语' value={form.feeling} onChange={v=>f('feeling',v)} placeholder='阳光刚好落到手臂上，觉得被大自然接纳了...' />
+          <ImageUploader images={form.images} onChange={v=>f('images',v)} />
+          <Btn onClick={()=>{addRecord('exercise',{...form}); setOpen(false); setForm({etype:'walk',duration:'',feeling:'',bodyStatus:'',notes:'',images:[]});}} variant='primary' fullWidth>悦纳健康体魄</Btn>
+        </div>
+      </Sheet>
+    </div>
+  );
+};
+
+const SomethingBig = ({ onBack, records, addRecord, deleteRecord }) => {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ btype:'wish', title:'', content:'', images:[] });
+  const f = (k,v) => setForm(p=>({...p,[k]:v}));
+  
+  const colorMap = { wish:'#C4B8C8', finance:'#A8C4B8', job:'#C4A882', life:'#A8B8C4', travel:'#C8B89C', diary:'#C4A8A8' };
+
+  return (
+    <div className="page-enter min-h-100vh bg-[var(--big-bg)]">
+      <ModuleHeader emoji='🌟' title='Something Big' accent='var(--big)' bg='var(--big-bg)' onBack={onBack} extra={<Btn onClick={()=>setOpen(true)} variant='primary' size='sm'>+ 留存大想法</Btn>} />
+      <div className="px-5 py-4 pb-nav">
+        {records.length===0 ? <Empty emoji='🌟' text='这里是一片无垠的精神沃土。种下你所有宏大的愿景、漫长跨度的畅想。' /> : (
+          /* 升级二：核心Big空间全面适配灵感瀑布流，更具沉淀厚度 */
+          <MiniMasonry items={records} renderItem={(r) => (
+            <div key={r.id} className="card p-3.5 flex flex-col gap-2 bg-white/95" style={{ borderTop: `3px solid ${colorMap[r.btype]||'var(--primary)'}` }}>
+              <div className="flex justify-between items-center text-[11px] font-semibold" style={{ color: colorMap[r.btype] }}></div >
+              <div className="flex justify-between items-center text-[11px] font-semibold" style={{ color: colorMap[r.btype] }}>
+                <span>{r.btype==='wish'?'🌟 岛屿愿景':r.btype==='finance'?'💰 理财积蓄':r.btype==='life'?'🌈 人生构想':'🗺️ 浩瀚流浪'}</span>
+                <button onClick={()=>deleteRecord('somethingbig',r.id)} className="text-stone-300 hover:text-stone-500 text-sm">&times;</button>
+              </div>
+              <ImageGrid images={r.images} />
+              {r.title && <p className="text-xs font-bold text-stone-800 leading-snug">{r.title}</p>}
+              {r.content && <p className="text-xs text-stone-600 font-serif leading-relaxed whitespace-pre-wrap">{r.content}</p>}
+              <p className="text-[9px] text-stone-300 font-sans mt-0.5">{fmtDate(r.createdAt)}</p>
+            </div>
+          )} />
+        )}
+      </div>
+      <Sheet open={open} onClose={()=>setOpen(false)} title='描摹远方轮廓'>
+        <div className="flex flex-col gap-3.5">
+          <SegmentPicker color='var(--primary)' options={[{value:'wish',label:'🌟 终极大愿'},{value:'finance',label:'💰 财富灌溉'},{value:'life',label:'🌈 生涯规划'},{value:'travel',label:'🗺️ 环游梦境'}]} value={form.btype} onChange={v=>f('btype',v)} />
+          <Field label='愿景 / 主题概括' value={form.title} onChange={v=>f('title',v)} placeholder='建立理想的书房 / 启动一笔自由基金...' />
+          <Field label='思想铺展细节' value={form.content} onChange={v=>f('content',v)} placeholder='写下那些能让你眼里闪烁繁星的真正期许...' rows={4} />
+          <ImageUploader images={form.images} onChange={v=>f('images',v)} />
+          <Btn onClick={()=>{ if(!form.title && !form.content) return; addRecord('somethingbig',{...form}); setOpen(false); setForm({btype:'wish',title:'',content:'',images:[]});}} variant='primary' fullWidth>投递至未来信箱</Btn>
+        </div>
+      </Sheet>
+    </div>
+  );
+};
+
+// ============================================================
+// 四、高端半透明 iPhone Dock 式底栏
+// ============================================================
+const BottomNav = ({ page, setPage }) => {
+  const tabs = [
+    { id:'home',        emoji:'🏠', label:'本真'  },
+    { id:'sleep',       emoji:'🌙', label:'夜阑'  },
+    { id:'diet',        emoji:'🍱', label:'烟火'  },
+    { id:'leisure',     emoji:'🌿', label:'幽径'  },
+    { id:'somethingbig',emoji:'🌟', label:'星空'   },
+  ];
+  return (
+    <div style={{ left:'50%', transform:'translateX(-50%)' }} className="fixed bottom-0 w-full max-w-[430px] z-[100] px-4 pb-4">
+      <div style={{ background:'rgba(255, 255, 255, 0.72)', backdropFilter:'blur(24px)', webkitBackdropFilter:'blur(24px)' }} 
+        className="flex justify-around items-center h-16 rounded-[22px] border border-white/60 shadow-[0_8px_32px_rgba(58,52,48,0.08)] px-2">
+        {tabs.map(t => {
+          const active = page === t.id;
+          return (
+            <button key={t.id} onClick={()=>setPage(t.id)} className="flex flex-col items-center justify-center gap-0.5 w-12 h-12 rounded-[16px] transition-all duration-300"
+              style={{ background: active ? 'var(--primary-light)' : 'transparent', transform: active ? 'scale(1.06)' : 'scale(1)' }}>
+              <span className="text-xl leading-none">{t.emoji}</span>
+              <span className="text-[10px] scale-90 tracking-wide font-medium" style={{ color: active ? 'var(--primary-dark)' : 'var(--text-3)' }}>{t.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// ============================================================
+// 五、主应用装载
+// ============================================================
+const App = () => {
+  const [page, setPage] = useState('home');
+  const [selectedDate, setSelectedDate] = useState(() => todayStr());
+
+  const [records, setRecords] = useState(() => ({
+    sleep:        DB.get('records_sleep',        []),
+    diet:         DB.get('records_diet',         []),
+    leisure:      DB.get('records_leisure',      []),
+    study:        DB.get('records_study',        []),
+    exercise:     DB.get('records_exercise',     []),
+    somethingbig: DB.get('records_somethingbig', []),
+  }));
+
+  const addRecord = (cat, data) => {
+    const rec = { id:genId(), category:cat, ...data, createdAt:new Date().toISOString() };
+    setRecords(prev => {
+      const next = { ...prev, [cat]: [rec, ...(prev[cat]||[])] };
+      DB.set('records_' + cat, next[cat]);
+      return next;
+    });
+  };
+
+  const deleteRecord = (cat, id) => {
+    setRecords(prev => {
+      const next = { ...prev, [cat]: prev[cat].filter(r=>r.id!==id) };
+      DB.set('records_' + cat, next[cat]);
+      return next;
+    });
+  };
+
+  const goBack = () => setPage('home');
+
+  const renderPage = () => {
+    switch(page) {
+      case 'home':        return <Dashboard setPage={setPage} records={records} selectedDate={selectedDate} setSelectedDate={setSelectedDate} onDeleteRecord={deleteRecord} />;
+      case 'sleep':       return <SleepModule    onBack={goBack} records={records.sleep}        addRecord={addRecord} deleteRecord={deleteRecord} />;
+      case 'diet':        return <DietModule      onBack={goBack} records={records.diet}         addRecord={addRecord} deleteRecord={deleteRecord} />;
+      case 'leisure':     return <LeisureModule   onBack={goBack} records={records.leisure}      addRecord={addRecord} deleteRecord={deleteRecord} />;
+      case 'study':       return <StudyModule      onBack={goBack} records={records.study}       addRecord={addRecord} deleteRecord={deleteRecord} />;
+      case 'exercise':    return <ExerciseModule   onBack={goBack} records={records.exercise}    addRecord={addRecord} deleteRecord={deleteRecord} />;
+      case 'somethingbig':return <SomethingBig     onBack={goBack} records={records.somethingbig} addRecord={addRecord} deleteRecord={deleteRecord} />;
+      default: return null;
+    }
+  };
+
+  return (
+    <ImagePreviewProvider>
+      <div className="min-h-100vh bg-[var(--bg)]">
+        {renderPage()}
+        <BottomNav page={page} setPage={setPage} />
+      </div>
+    </ImagePreviewProvider>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
